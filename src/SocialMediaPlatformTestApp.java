@@ -10,15 +10,17 @@ import socialmedia.SocialMediaPlatform;
  * want to increase these checks, and run it on your SocialMedia class (not the
  * BadSocialMedia class).
  *
- * 
+ *
  * @author Diogo Pacheco
  * @version 1.0
  */
 public class SocialMediaPlatformTestApp {
 
+	//HELLOOO
+
 	/**
 	 * Test method.
-	 * 
+	 *
 	 * @param args not used
 	 */
 	public static void main(String[] args) {
