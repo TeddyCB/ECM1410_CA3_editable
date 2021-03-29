@@ -1,6 +1,7 @@
 package socialmedia;
 
 /**
+ * test
  * SocialMediaPlatform interface. This interface is a more elaborated version of
  * the MiniSocialMediaPlatform. The no-argument constructor of a class
  * implementing this interface should initialise the SocialMediaPlatform as an

@@ -34,7 +34,6 @@ public class BadSocialMedia implements SocialMediaPlatform {
 		// TODO Auto-generated method stub
 
 	}
-
 	@Override
 	public void changeAccountHandle(String oldHandle, String newHandle)
 			throws HandleNotRecognisedException, IllegalHandleException, InvalidHandleException {
