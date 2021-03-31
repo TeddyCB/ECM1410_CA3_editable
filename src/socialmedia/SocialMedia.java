@@ -87,17 +87,30 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public int createAccount(String handle, String description) throws IllegalHandleException, InvalidHandleException {
-        Account user = new Account();
-        int id;
-        if(usersList == null){
-            id = 0;
-        }else{
-            id = usersList.size();
-        }
-        user.createAccount(handle,description, id);
-        usersList.add(user);
-        return 0;
+        if (checkUsername(handle)){
+          Account user = new Account();
+          int id;
+          if(usersList == null){
+              id = 0;
+          }else{
+              id = usersList.size();
+          }
+          user.createAccount(handle,description, id);
+          usersList.add(user);
+          return 0;
+        } }
+
+    public boolean checkUsername(String handle){
+      for(int i = 0; i < usersList.size(); i ++) {
+        Account user = userList.get(i) ;
+        String userName = user.getHandle() ;
+        if(handle.equals(userName)){
+          System.out.println("Username already taken") ;
+          return false ;
+        } else {return true ;}}
+      return true ;
     }
+
 
     @Override
     public void removeAccount(String handle) throws HandleNotRecognisedException {
@@ -140,6 +153,7 @@ public class SocialMedia implements SocialMediaPlatform {
 
     public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException {
         SocialMedia socialMedia = new SocialMedia();
+        socialMedia.createAccount("User1","Hello, user1");
         socialMedia.createAccount("User1","Hello, user1");
         socialMedia.createAccount("User2", "Hello, user2");
         System.out.println(socialMedia.getUsersList().get(0).getId() + " " + socialMedia.getUsersList().get(0).getHandle());
