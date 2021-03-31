@@ -97,12 +97,14 @@ public class SocialMedia implements SocialMediaPlatform {
           }
           user.createAccount(handle,description, id);
           usersList.add(user);
-          return 0;
-        } }
+          return user.getId();
+        }
+        return 0;
+    }
 
     public boolean checkUsername(String handle){
       for(int i = 0; i < usersList.size(); i ++) {
-        Account user = userList.get(i) ;
+        Account user = usersList.get(i) ;
         String userName = user.getHandle() ;
         if(handle.equals(userName)){
           System.out.println("Username already taken") ;
