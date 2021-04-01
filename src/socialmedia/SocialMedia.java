@@ -5,9 +5,14 @@ import java.util.ArrayList;
 
 public class SocialMedia implements SocialMediaPlatform {
     private ArrayList<Account> usersList = new ArrayList<>();
+    private ArrayList<Posts> userPosts = new ArrayList<>();
 
     public ArrayList<Account> getUsersList() {
         return usersList;
+    }
+
+    public ArrayList<Posts> getUserPosts() {
+        return userPosts ;
     }
 
     @Override
@@ -32,7 +37,24 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public int createPost(String handle, String message) throws HandleNotRecognisedException, InvalidPostException {
-        return 0;
+        if(message.length() > 100 ) {
+            System.out.println("Message too long, please keep under 100 characters.") ;
+            return -1 ;
+        } int id;
+        if(userPosts == null){
+            id = 0;
+        }else{
+            id = userPosts.size();
+        }
+        for(int i = 0; i < usersList.size(); i ++) {
+            Account user = usersList.get(i) ;
+            String userName = user.getHandle() ;
+            if(handle.equals(userName)){
+                Posts posts = new Posts(user, message, id) ;
+                userPosts.add(posts) ;
+                user.addUserPosts(posts) ;
+            } }
+        return id;
     }
 
     @Override
@@ -40,14 +62,28 @@ public class SocialMedia implements SocialMediaPlatform {
         return 0;
     }
 
-    @Override
+    @Override //handle is the username of the account commenting, id stands for the id of the post, message stands for comment content
     public int commentPost(String handle, int id, String message) throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException, InvalidPostException {
-        return 0;
+        Posts parentPost = new Posts() ;
+        int commentID = userPosts.size() ;
+        for(int i = 0; i < userPosts.size(); i ++) {
+            Posts post = userPosts.get(i) ;
+            if(post.getPostID() == id){
+                parentPost = post ;
+                break ;
+            } }
+        for(int i = 0; i < usersList.size(); i ++) {
+            Account user = usersList.get(i) ;
+            String userName = user.getHandle() ;
+            if(handle.equals(userName)){
+               Comments userComment = new Comments(user, message, commentID) ;
+               userComment.setParentPost(parentPost);
+            }
+    } return commentID ; //newID for comment
     }
 
     @Override
     public void deletePost(int id) throws PostIDNotRecognisedException {
-
     }
 
     @Override
@@ -125,13 +161,18 @@ public class SocialMedia implements SocialMediaPlatform {
                 break;
             }
         }
-
     }
 
     @Override
     public void updateAccountDescription(String handle, String description) throws HandleNotRecognisedException {
-
-    }
+        for(int i = 0; i < usersList.size(); i ++) {
+            Account user = usersList.get(i) ;
+            String userName = user.getHandle() ;
+            if(handle.equals(userName)){
+                user.changeDescription(description) ;
+                break ;
+            }
+    } }
 
     @Override
     public int getNumberOfAccounts() {
@@ -153,7 +194,7 @@ public class SocialMedia implements SocialMediaPlatform {
         return 0;
     }
 
-    public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException {
+    public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException {
         SocialMedia socialMedia = new SocialMedia();
         socialMedia.createAccount("User1","Hello, user1");
         socialMedia.createAccount("User1","Hello, user1");
@@ -162,6 +203,14 @@ public class SocialMedia implements SocialMediaPlatform {
         System.out.println(socialMedia.getUsersList().get(1).getId() +" " + socialMedia.getUsersList().get(1).getHandle());
         socialMedia.removeAccount("User2");
         System.out.println(socialMedia.getUsersList().size());
-
+        ArrayList<Account> ArrayListAccounts = socialMedia.getUsersList() ;
+        for(int i = 0; i < ArrayListAccounts.size(); i++) {
+            Account user = ArrayListAccounts.get(i);
+            System.out.println(user.getDescription());
+            socialMedia.updateAccountDescription("User1", "HelloHelloHello") ;
+            System.out.println(user.getDescription()) ;
+        }
+        socialMedia.createPost("User1", "This is message") ;
+        System.out.println(socialMedia.getUserPosts().get(0).getPostContent()) ;
     }
 }
