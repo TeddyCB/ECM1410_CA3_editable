@@ -8,9 +8,10 @@ public class Account{
     private String handle; //username
     private String description;
     private ArrayList<Posts> userPosts = new ArrayList<>() ;
+    private int UserEndorsements = 0;
 
      public void createAccount(String handle, String description, int id) throws  IllegalHandleException, InvalidHandleException{
-        this.handle = handle;
+        changeHandle(handle);
         this.description = description;
         this.id = id;
      }
@@ -21,6 +22,16 @@ public class Account{
 
     public String getDescription() {
         return description;
+    }
+    public void changeHandle(String newHandle){
+         this.handle = newHandle;
+    }
+    public void addUserEndorsements(){
+         UserEndorsements += 1;
+    }
+
+    public int getUserEndorsements() {
+        return UserEndorsements;
     }
 
     public int getId() {
@@ -43,5 +54,7 @@ public class Account{
          } return null ;
      }
 
-
+    public ArrayList<Posts> getUserPosts() {
+        return userPosts;
+    }
 }

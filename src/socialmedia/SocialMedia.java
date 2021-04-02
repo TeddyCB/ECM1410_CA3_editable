@@ -27,12 +27,38 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public void changeAccountHandle(String oldHandle, String newHandle) throws HandleNotRecognisedException, IllegalHandleException, InvalidHandleException {
-
+        if(newHandle.length() > 30){
+            System.out.println("This handle is longer than 30 characters, Please enter a shorter username.");
+            return;
+        }
+        for(Account user: usersList){
+            if(user.getHandle().equals("newHandle")){
+                System.out.println("This handle is already in the system. Please enter a different username");
+                return;
+            }
+        }
+        for(int i = 0; i < usersList.size(); i ++) {
+            Account user = usersList.get(i);
+            String userName = user.getHandle();
+            if (oldHandle.equals(userName)) {
+                user.changeHandle(newHandle);
+                break;
+            }
+        }
     }
 
     @Override
     public String showAccount(String handle) throws HandleNotRecognisedException {
-        return null;
+        String account = "";
+        for(int i = 0; i < usersList.size(); i ++) {
+            Account user = usersList.get(i);
+            String userName = user.getHandle();
+            if (handle.equals(userName)) {
+                account = "ID: " + user.getId() + "\nHandle: " + user.getHandle()
+                        + "\nPost count: " + user.getUserPosts().size() +"\nEndorse count: " + user.getUserEndorsements();
+            }
+        }
+        return account;
     }
 
     @Override
@@ -57,20 +83,43 @@ public class SocialMedia implements SocialMediaPlatform {
         return id;
     }
 
-    @Override
+    @Override//handle is the account endorsing a post. id of original post
     public int endorsePost(String handle, int id) throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException {
-        return 0;
+        Posts endorsedPost = new Posts(); //content of post getting endorsed/retweeted
+        Account user = new Account();//the account linked to the retweet
+        for(Posts post: userPosts){
+            if(post.getPostID() == id){
+                endorsedPost = post;
+                break;
+            }
+        }
+        for(Account account: usersList){
+            if(account.getHandle().equals(handle)){
+                user = account;
+                break;
+            }
+        }
+        Endorsement endorsement = new Endorsement(user, userPosts.size());
+        endorsement.formatEndorsement(endorsedPost);
+        userPosts.add(endorsement);
+        endorsedPost.addEndorsementCount();
+        return endorsement.getPostID();
     }
 
     @Override //handle is the username of the account commenting, id stands for the id of the post, message stands for comment content
     public int commentPost(String handle, int id, String message) throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException, InvalidPostException {
+
         Posts parentPost = new Posts() ;
         int commentID = userPosts.size() ;
         for(int i = 0; i < userPosts.size(); i ++) {
             Posts post = userPosts.get(i) ;
             if(post.getPostID() == id){
+                if(post.isEndorsement()){
+                    System.out.println("Cannot comment on endorsement!");
+                    return -1;
+                }
                 parentPost = post ;
-                break ;
+                break;
             } }
         for(int i = 0; i < usersList.size(); i ++) {
             Account user = usersList.get(i) ;
@@ -78,6 +127,8 @@ public class SocialMedia implements SocialMediaPlatform {
             if(handle.equals(userName)){
                Comments userComment = new Comments(user, message, commentID) ;
                userComment.setParentPost(parentPost);
+               parentPost.addCommentCount();
+               userPosts.add(userComment);
             }
     } return commentID ; //newID for comment
     }
@@ -88,7 +139,18 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public String showIndividualPost(int id) throws PostIDNotRecognisedException {
-        return null;
+        Posts targetPost = new Posts();
+        String individualPost;
+        for(Posts post: userPosts){
+            if(post.getPostID() == id){
+                targetPost = post;
+                break;
+            }
+        }
+        individualPost = "ID: " + targetPost.getPostID() + "\nAccount: " + targetPost.getAccount().getHandle()
+                + "\nNo. endorsements: " + targetPost.getEndorsementCount() + " | No. comments: " + targetPost.getCommentCount() + "\n" + targetPost.getPostContent() +" \n";
+
+        return individualPost;
     }
 
     @Override
@@ -194,14 +256,13 @@ public class SocialMedia implements SocialMediaPlatform {
         return 0;
     }
 
-    public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException {
+    public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException, NotActionablePostException, PostIDNotRecognisedException {
         SocialMedia socialMedia = new SocialMedia();
         socialMedia.createAccount("User1","Hello, user1");
         socialMedia.createAccount("User1","Hello, user1");
         socialMedia.createAccount("User2", "Hello, user2");
         System.out.println(socialMedia.getUsersList().get(0).getId() + " " + socialMedia.getUsersList().get(0).getHandle());
         System.out.println(socialMedia.getUsersList().get(1).getId() +" " + socialMedia.getUsersList().get(1).getHandle());
-        socialMedia.removeAccount("User2");
         System.out.println(socialMedia.getUsersList().size());
         ArrayList<Account> ArrayListAccounts = socialMedia.getUsersList() ;
         for(int i = 0; i < ArrayListAccounts.size(); i++) {
@@ -211,6 +272,14 @@ public class SocialMedia implements SocialMediaPlatform {
             System.out.println(user.getDescription()) ;
         }
         socialMedia.createPost("User1", "This is message") ;
-        System.out.println(socialMedia.getUserPosts().get(0).getPostContent()) ;
+        socialMedia.commentPost("User2",0,"This is a comment");
+        System.out.println(socialMedia.showIndividualPost(0));
+        socialMedia.changeAccountHandle("User1","User252012321123");
+        System.out.println(socialMedia.showAccount("User252012321123"));
+        socialMedia.endorsePost("User2",0);
+        System.out.println(socialMedia.getUserPosts().get(socialMedia.getUserPosts().size() -1).getPostContent());
+        System.out.println(socialMedia.showAccount("User252012321123"));
+        socialMedia.commentPost("User2",socialMedia.getUserPosts().get(socialMedia.getUserPosts().size() -1).getPostID(),"This should not work");
+
     }
 }
