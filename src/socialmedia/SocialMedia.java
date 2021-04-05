@@ -104,6 +104,8 @@ public class SocialMedia implements SocialMediaPlatform {
         endorsement.formatEndorsement(endorsedPost);
         userPosts.add(endorsement);
         endorsedPost.addEndorsementCount();
+        endorsedPost.addEndorsement(endorsement);
+        user.addUserPosts(endorsement);
         return endorsement.getPostID();
     }
 
@@ -115,8 +117,8 @@ public class SocialMedia implements SocialMediaPlatform {
         for(int i = 0; i < userPosts.size(); i ++) {
             Posts post = userPosts.get(i) ;
             if(post.getPostID() == id){
-                if(post.isEndorsement()){
-                    System.out.println("Cannot comment on endorsement!");
+                if(post.isEndorsement() || post.isDeleted()){
+                    System.out.println("Tried to comment on Endorsement or Deleted Post! Please only comment on available posts/comments!");
                     return -1;
                 }
                 parentPost = post ;
@@ -130,6 +132,7 @@ public class SocialMedia implements SocialMediaPlatform {
                 userComment.setParentPost(parentPost);
                 parentPost.setChildrenList(userComment); //Set comment as a children of the parentPost
                 parentPost.addCommentCount();
+                user.addUserPosts(userComment);
                 userPosts.add(userComment);
             }
         } return commentID ; //newID for comment
@@ -137,6 +140,24 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public void deletePost(int id) throws PostIDNotRecognisedException {
+        Posts targetPost = new Posts();
+        for(Posts post: userPosts){
+            if(post.getPostID() == id){
+                targetPost = post;
+                break;
+            }
+        }
+        targetPost.setPostContent("<The original content was removed from the system and is no longer available.>");
+        targetPost.setDeleted(true);
+        for(Posts Endorsement: targetPost.getEndorsements()){
+            for(Posts post: userPosts){
+                if(post.getPostID() == Endorsement.getPostID()){
+                    userPosts.remove(post);
+                    break;
+                }
+            }
+            Endorsement.clearAll();
+        }
     }
 
     @Override
@@ -158,6 +179,21 @@ public class SocialMedia implements SocialMediaPlatform {
     public void clearStringBuilder(){
         childrenPostContent.setLength(0);
     }
+    public void FormatStringBuilder(Posts post) throws PostIDNotRecognisedException {
+        if(post != null){
+            String individualPost;
+            if(post.isComment()){
+                childrenPostContent.append(("   ").repeat(Math.max(0,post.getDepth()) - 1)).append("| >");
+                individualPost = showIndividualPost(post.getPostID()).replace("\n","\n" + ("   ").repeat(Math.max(0,post.getDepth())));
+            }else{
+                individualPost = showIndividualPost(post.getPostID());
+            }
+            childrenPostContent.append(individualPost).append("|\n");
+            for(Posts child: post.getPostChildrenList()){
+                FormatStringBuilder(child);
+            }
+        }
+    }
 
     @Override
     public StringBuilder showPostChildrenDetails(int id) throws PostIDNotRecognisedException, NotActionablePostException {
@@ -168,15 +204,8 @@ public class SocialMedia implements SocialMediaPlatform {
             if(post.getPostID() == id){
                 parentPost = post ;
             } }
-        ArrayList<Posts> allChildren = parentPost.getPostChildrenList();
-        for(int i = 0; i < allChildren.size(); i++){
-            Posts currentChild = allChildren.get(i);
-            ArrayList<Posts> childrenChildren = parentPost.getPostChildrenList();
-            int idNumber = allChildren.get(i).getPostID() ;
-            childrenPostContent.append(showIndividualPost(idNumber));
-        }
-
-        return null;
+        FormatStringBuilder(parentPost);
+        return childrenPostContent;
     }
 
     @Override
@@ -240,6 +269,9 @@ public class SocialMedia implements SocialMediaPlatform {
             Account user = usersList.get(i);
             if(user.getHandle().equals(handle)){
                 user_index = i;
+                for(Posts post: user.getUserPosts()){
+                    post.clearAll();
+                }
                 usersList.remove(user_index);
                 break;
             }
@@ -282,25 +314,13 @@ public class SocialMedia implements SocialMediaPlatform {
         socialMedia.createAccount("User1","Hello, user1");
         socialMedia.createAccount("User1","Hello, user1");
         socialMedia.createAccount("User2", "Hello, user2");
-        System.out.println(socialMedia.getUsersList().get(0).getId() + " " + socialMedia.getUsersList().get(0).getHandle());
-        System.out.println(socialMedia.getUsersList().get(1).getId() +" " + socialMedia.getUsersList().get(1).getHandle());
-        System.out.println(socialMedia.getUsersList().size());
-        ArrayList<Account> ArrayListAccounts = socialMedia.getUsersList() ;
-        for(int i = 0; i < ArrayListAccounts.size(); i++) {
-            Account user = ArrayListAccounts.get(i);
-            System.out.println(user.getDescription());
-            socialMedia.updateAccountDescription("User1", "HelloHelloHello") ;
-            System.out.println(user.getDescription()) ;
-        }
         socialMedia.createPost("User1", "This is message") ;
         socialMedia.commentPost("User2",0,"This is a comment");
-        System.out.println(socialMedia.showIndividualPost(0));
-        socialMedia.changeAccountHandle("User1","User252012321123");
-        System.out.println(socialMedia.showAccount("User252012321123"));
-        socialMedia.endorsePost("User2",0);
-        System.out.println(socialMedia.getUserPosts().get(socialMedia.getUserPosts().size() -1).getPostContent());
-        System.out.println(socialMedia.showAccount("User252012321123"));
-        socialMedia.commentPost("User2",socialMedia.getUserPosts().get(socialMedia.getUserPosts().size() -1).getPostID(),"This should not work");
+        socialMedia.commentPost("User1",1,"This is a comment on your comment");
+        socialMedia.commentPost("User2",2,"This is a comment on your comment on your comment");
+        socialMedia.deletePost(1);
+        System.out.println(socialMedia.showPostChildrenDetails(0));
+        //socialMedia.commentPost("User1",1,"This should work");
 
     }
 }

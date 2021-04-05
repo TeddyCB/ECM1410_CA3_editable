@@ -15,6 +15,11 @@ public class Account{
         this.description = description;
         this.id = id;
      }
+     public void clearAccount(){
+         id = -1;
+         handle = null;
+         description = null;
+     }
 
     public String getHandle() {
         return handle;
