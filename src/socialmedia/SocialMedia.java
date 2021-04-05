@@ -6,6 +6,7 @@ import java.util.ArrayList;
 public class SocialMedia implements SocialMediaPlatform {
     private ArrayList<Account> usersList = new ArrayList<>();
     private ArrayList<Posts> userPosts = new ArrayList<>();
+    private StringBuilder childrenPostContent = new StringBuilder();
 
     public ArrayList<Account> getUsersList() {
         return usersList;
@@ -122,15 +123,16 @@ public class SocialMedia implements SocialMediaPlatform {
                 break;
             } }
         for(int i = 0; i < usersList.size(); i ++) {
-            Account user = usersList.get(i) ;
-            String userName = user.getHandle() ;
-            if(handle.equals(userName)){
-               Comments userComment = new Comments(user, message, commentID) ;
-               userComment.setParentPost(parentPost);
-               parentPost.addCommentCount();
-               userPosts.add(userComment);
+            Account user = usersList.get(i);
+            String userName = user.getHandle();
+            if (handle.equals(userName)) {
+                Comments userComment = new Comments(user, message, commentID);
+                userComment.setParentPost(parentPost);
+                parentPost.setChildrenList(userComment); //Set comment as a children of the parentPost
+                parentPost.addCommentCount();
+                userPosts.add(userComment);
             }
-    } return commentID ; //newID for comment
+        } return commentID ; //newID for comment
     }
 
     @Override
@@ -153,8 +155,27 @@ public class SocialMedia implements SocialMediaPlatform {
         return individualPost;
     }
 
+    public void clearStringBuilder(){
+        childrenPostContent.setLength(0);
+    }
+
     @Override
     public StringBuilder showPostChildrenDetails(int id) throws PostIDNotRecognisedException, NotActionablePostException {
+        clearStringBuilder();
+        Posts parentPost = new Posts() ;
+        for(int i = 0; i < userPosts.size(); i ++) {
+            Posts post = userPosts.get(i) ;
+            if(post.getPostID() == id){
+                parentPost = post ;
+            } }
+        ArrayList<Posts> allChildren = parentPost.getPostChildrenList();
+        for(int i = 0; i < allChildren.size(); i++){
+            Posts currentChild = allChildren.get(i);
+            ArrayList<Posts> childrenChildren = parentPost.getPostChildrenList();
+            int idNumber = allChildren.get(i).getPostID() ;
+            childrenPostContent.append(showIndividualPost(idNumber));
+        }
+
         return null;
     }
 

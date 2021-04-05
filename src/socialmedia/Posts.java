@@ -1,5 +1,7 @@
 package socialmedia;
 
+import java.util.ArrayList;
+
 public class Posts {
     private Account account ;
     private String postContent ;
@@ -7,6 +9,8 @@ public class Posts {
     private int commentCount = 0;
     private int endorsementCount = 0;
     private boolean isEndorsement = false;
+    private ArrayList<Posts> postChildrenList = new ArrayList<>();
+
     Posts(){
     }
     Posts(Account account, int postID){
@@ -57,4 +61,17 @@ public class Posts {
     public void setPostContent(String postContent) {
         this.postContent = postContent;
     }
+
+    public void setChildrenList(Posts post){
+        postChildrenList.add(post);
+    }
+
+    public ArrayList<Posts> getPostChildrenList() {
+        return postChildrenList;
+    }
+
+    public void removeChildFromList(Posts post){
+        postChildrenList.remove(post) ;
+    }
+
 }
