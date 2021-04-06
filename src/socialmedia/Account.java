@@ -7,10 +7,13 @@ public class Account{
     private int id;
     private String handle; //username
     private String description;
-    private ArrayList<Posts> userPosts = new ArrayList<>() ;
+    private ArrayList<Posts> userPosts = new ArrayList<>();
     private int UserEndorsements = 0;
+    Account(){
 
-     public void createAccount(String handle, String description, int id) throws  IllegalHandleException, InvalidHandleException{
+    }
+
+     Account(String handle, String description, int id) throws  IllegalHandleException, InvalidHandleException{
         changeHandle(handle);
         this.description = description;
         this.id = id;

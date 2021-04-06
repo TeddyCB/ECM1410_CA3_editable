@@ -7,6 +7,10 @@ public class SocialMedia implements SocialMediaPlatform {
     private ArrayList<Account> usersList = new ArrayList<>();
     private ArrayList<Posts> userPosts = new ArrayList<>();
     private StringBuilder childrenPostContent = new StringBuilder();
+    private Account DELETED_USER = new Account("[DELETED_USER]","",-1);
+
+    public SocialMedia() throws IllegalHandleException, InvalidHandleException {
+    }
 
     public ArrayList<Account> getUsersList() {
         return usersList;
@@ -202,7 +206,7 @@ public class SocialMedia implements SocialMediaPlatform {
         for(int i = 0; i < userPosts.size(); i ++) {
             Posts post = userPosts.get(i) ;
             if(post.getPostID() == id){
-                parentPost = post ;
+                parentPost = post;
             } }
         FormatStringBuilder(parentPost);
         return childrenPostContent;
@@ -210,13 +214,35 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public int getMostEndorsedPost() {
-        return 0;
+        Posts MostEndorsed = new Posts();
+        for(Posts post : userPosts){
+            if(post.isEndorsement()){
+                continue;
+            }
+            if(MostEndorsed.getAccount() == null){
+                MostEndorsed = post;
+            }
+            else if(MostEndorsed.getEndorsementCount() < post.getEndorsementCount()){
+                MostEndorsed = post;
+            }
+
+        }
+        return MostEndorsed.getPostID();
     }
 
     @Override
     public int getMostEndorsedAccount() {
-        return 0;
-    }
+        Account MostEndorsed = new Account();
+        for(Account user : usersList){
+            if(MostEndorsed.getHandle() == null){
+                MostEndorsed = user;
+            }
+            else if(MostEndorsed.getUserEndorsements() < user.getUserEndorsements()){
+                MostEndorsed = user;
+            }
+        }
+        return MostEndorsed.getId();
+        }
 
     @Override
     public void erasePlatform() {
@@ -236,14 +262,13 @@ public class SocialMedia implements SocialMediaPlatform {
     @Override
     public int createAccount(String handle, String description) throws IllegalHandleException, InvalidHandleException {
         if (checkUsername(handle)){
-          Account user = new Account();
           int id;
           if(usersList == null){
               id = 0;
           }else{
               id = usersList.size();
           }
-          user.createAccount(handle,description, id);
+          Account user = new Account(handle,description, id);
           usersList.add(user);
           return user.getId();
         }
@@ -264,15 +289,15 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public void removeAccount(String handle) throws HandleNotRecognisedException {
-        int user_index;
         for(int i = 0; i < usersList.size(); i++){
             Account user = usersList.get(i);
             if(user.getHandle().equals(handle)){
-                user_index = i;
-                for(Posts post: user.getUserPosts()){
-                    post.clearAll();
+                for(Posts userPost : user.getUserPosts()){
+                    userPost.setAccount(DELETED_USER);
+                    userPost.setPostContent("<The original content was removed from the system and is no longer available.>");
+                    DELETED_USER.addUserPosts(userPost);
                 }
-                usersList.remove(user_index);
+                usersList.remove(user);
                 break;
             }
         }
@@ -291,36 +316,61 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public int getNumberOfAccounts() {
-        return 0;
+        return usersList.size();
     }
 
     @Override
     public int getTotalOriginalPosts() {
-        return 0;
+        int count = 0;
+        for(Posts post: userPosts){
+            if(post.isComment() || post.isEndorsement()){
+                continue;
+            }
+            count++;
+        }
+        return count;
     }
 
     @Override
     public int getTotalEndorsmentPosts() {
-        return 0;
+        int count = 0;
+        for(Posts post: userPosts){
+            if(!post.isEndorsement()){
+                continue;
+            }
+            count++;
+        }
+        return count;
     }
 
     @Override
     public int getTotalCommentPosts() {
-        return 0;
+        int count = 0;
+        for(Posts post: userPosts){
+            if(!post.isComment()){
+                continue;
+            }
+            count++;
+        }
+        return count;
     }
 
     public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException, NotActionablePostException, PostIDNotRecognisedException {
         SocialMedia socialMedia = new SocialMedia();
         socialMedia.createAccount("User1","Hello, user1");
-        socialMedia.createAccount("User1","Hello, user1");
+        socialMedia.createAccount("User3","Hello, user3");
         socialMedia.createAccount("User2", "Hello, user2");
         socialMedia.createPost("User1", "This is message") ;
         socialMedia.commentPost("User2",0,"This is a comment");
         socialMedia.commentPost("User1",1,"This is a comment on your comment");
         socialMedia.commentPost("User2",2,"This is a comment on your comment on your comment");
-        socialMedia.deletePost(1);
+        socialMedia.endorsePost("User2",0);
+        socialMedia.endorsePost("User3",0);
+        socialMedia.createPost("User2","ljkdfhslkfjhsadkljfhljkasdhfljkashdflkjsah");
         System.out.println(socialMedia.showPostChildrenDetails(0));
-        //socialMedia.commentPost("User1",1,"This should work");
+        System.out.println(socialMedia.getNumberOfAccounts() +" " + socialMedia.getTotalCommentPosts() + " " + socialMedia.getTotalEndorsmentPosts());
+        System.out.println(socialMedia.showIndividualPost(socialMedia.getMostEndorsedPost()));
+        System.out.println(socialMedia.getMostEndorsedAccount());
 
     }
 }

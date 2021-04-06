@@ -57,10 +57,13 @@ public class Posts {
     }
     public void clearAll(){
         account = null;
-        postContent = null;
-        postID = -1;
+        postContent = "<The original content was removed from the system and is no longer available.>";
         commentCount = -1;
         endorsementCount = -1;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public ArrayList<Posts> getEndorsements() {
