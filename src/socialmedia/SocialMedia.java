@@ -1,6 +1,6 @@
 package socialmedia;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
 public class SocialMedia implements SocialMediaPlatform {
@@ -21,12 +21,12 @@ public class SocialMedia implements SocialMediaPlatform {
     }
 
     @Override
-    public int createAccount(String handle) throws IllegalHandleException, InvalidHandleException {
+    public int createAccount(String handle) throws IllegalHandleException, InvalidHandleException { //We do not touch this
         return 0;
     }
 
     @Override
-    public void removeAccount(int id) throws AccountIDNotRecognisedException {
+    public void removeAccount(int id) throws AccountIDNotRecognisedException {  //We do not touch this
 
     }
 
@@ -251,13 +251,46 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public void savePlatform(String filename) throws IOException {
-
+        FileOutputStream fileStore = new FileOutputStream(filename + ".ser");
+        ObjectOutputStream objectStore = new ObjectOutputStream(fileStore);
+        objectStore.writeObject(usersList);
+        objectStore.writeObject(userPosts);
+        objectStore.writeObject(DELETED_USER);
+        objectStore.close();
+        fileStore.close();
     }
 
     @Override
     public void loadPlatform(String filename) throws IOException, ClassNotFoundException {
+        FileInputStream fileInput = new FileInputStream(filename + ".ser");
+        boolean b = true;
+        ArrayList<Object> fileObjects = new ArrayList<>();
+        ObjectInputStream objectStore = new ObjectInputStream(fileInput);
+        Object obj = null;
+        try{
+        while((obj = objectStore.readObject()) != null){
+            fileObjects.add(obj);
+        }} catch(Exception e){
+            System.out.println("problem");
+        }
+        objectStore.close();
+        fileInput.close();
+        for(int i=0; i<fileObjects.size(); i++) {
+            System.out.println(fileObjects.size());
+            if (((Account) fileObjects.get(i)).getHandle().equals("[DELETED_USER]")) {
+                this.DELETED_USER = (Account) fileObjects.get(i);
+                continue;
+            }
+            ArrayList <Object> arrayList = (ArrayList) fileObjects.get(i);
+            for(int a=0; a < arrayList.size(); a++){
+                try{
+                    usersList.add((Account) arrayList.get(a));
+                } catch(Exception e){
+                    userPosts.add((Posts) arrayList.get(a));
+                }
+            }
+             }}
 
-    }
 
     @Override
     public int createAccount(String handle, String description) throws IllegalHandleException, InvalidHandleException {
@@ -355,22 +388,9 @@ public class SocialMedia implements SocialMediaPlatform {
         return count;
     }
 
-    public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException, NotActionablePostException, PostIDNotRecognisedException {
+    public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException, NotActionablePostException, PostIDNotRecognisedException, IOException, ClassNotFoundException {
         SocialMedia socialMedia = new SocialMedia();
-        socialMedia.createAccount("User1","Hello, user1");
-        socialMedia.createAccount("User3","Hello, user3");
-        socialMedia.createAccount("User2", "Hello, user2");
-        socialMedia.createPost("User1", "This is message") ;
-        socialMedia.commentPost("User2",0,"This is a comment");
-        socialMedia.commentPost("User1",1,"This is a comment on your comment");
-        socialMedia.commentPost("User2",2,"This is a comment on your comment on your comment");
-        socialMedia.endorsePost("User2",0);
-        socialMedia.endorsePost("User3",0);
-        socialMedia.createPost("User2","ljkdfhslkfjhsadkljfhljkasdhfljkashdflkjsah");
+        socialMedia.loadPlatform("try1");
         System.out.println(socialMedia.showPostChildrenDetails(0));
-        System.out.println(socialMedia.getNumberOfAccounts() +" " + socialMedia.getTotalCommentPosts() + " " + socialMedia.getTotalEndorsmentPosts());
-        System.out.println(socialMedia.showIndividualPost(socialMedia.getMostEndorsedPost()));
-        System.out.println(socialMedia.getMostEndorsedAccount());
-
     }
 }

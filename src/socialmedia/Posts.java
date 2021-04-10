@@ -1,8 +1,9 @@
 package socialmedia;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Posts {
+public class Posts implements Serializable {
     private Account account ;
     private String postContent ;
     private int postID ;

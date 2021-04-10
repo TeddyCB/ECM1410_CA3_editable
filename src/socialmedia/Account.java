@@ -1,9 +1,10 @@
 package socialmedia;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Account{
+public class Account implements Serializable {
     private int id;
     private String handle; //username
     private String description;
