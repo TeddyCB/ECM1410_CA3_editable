@@ -32,14 +32,38 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public void changeAccountHandle(String oldHandle, String newHandle) throws HandleNotRecognisedException, IllegalHandleException, InvalidHandleException {
-        if(newHandle.length() > 30){
-            System.out.println("This handle is longer than 30 characters, Please enter a shorter username.");
-            return;
-        }
-        for(Account user: usersList){
-            if(user.getHandle().equals("newHandle")){
-                System.out.println("This handle is already in the system. Please enter a different username");
-                return;
+        boolean InSystem = false;
+        boolean IllegalHandle = false;
+        try {
+            if (newHandle.length() > 30) {
+                throw new InvalidHandleException("HANDLE TOO LONG!");
+            }
+            for (Account user : usersList) {
+                if (user.getHandle().equals(oldHandle)) {
+                    InSystem = true;
+                    break;
+                }
+            }
+            if (!InSystem) {
+                throw new HandleNotRecognisedException("HANDLE HAS NOT BEEN FOUND IN THE SYSTEM");
+            }
+            for (Account user : usersList) {
+                if (user.getHandle().equals("newHandle")) {
+                    IllegalHandle = true;
+                }
+            }
+            if (IllegalHandle) {
+                throw new IllegalHandleException("HANDLE ALREADY TAKEN");
+            }
+        }catch (HandleNotRecognisedException| IllegalHandleException| InvalidHandleException e){
+            if(e.getMessage().equals("HANDLE TOO LONG!")){
+                System.out.println("NEW HANDLE IS GREATER THAN 30 CHARACTERS! PLEASE INPUT A SHORTER HANDLE");
+            }
+            else if(e.getMessage().equals("HANDLE HAS NOT BEEN FOUND IN THE SYSTEM")){
+                System.out.println("THE OLD HANDLE HAS NOT BEEN FOUND, MAKE SURE THE HANDLE IS CORRECT!");
+            }
+            else{
+                System.out.println("THE NEW HANDLE HAS ALREADY BEEN TAKEN! PLEASE ENTER A UNIQUE HANDLE!");
             }
         }
         for(int i = 0; i < usersList.size(); i ++) {
@@ -54,14 +78,26 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public String showAccount(String handle) throws HandleNotRecognisedException {
+        Account user = new Account();
         String account = "";
+        boolean HandleRecognised = false;
         for(int i = 0; i < usersList.size(); i ++) {
-            Account user = usersList.get(i);
+            user = usersList.get(i);
             String userName = user.getHandle();
             if (handle.equals(userName)) {
-                account = "ID: " + user.getId() + "\nHandle: " + user.getHandle()
-                        + "\nPost count: " + user.getUserPosts().size() +"\nEndorse count: " + user.getUserEndorsements();
+                HandleRecognised = true;
+                break;
             }
+        }
+        try {
+            if (HandleRecognised) {
+                account = "ID: " + user.getId() + "\nHandle: " + user.getHandle()
+                        + "\nPost count: " + user.getUserPosts().size() + "\nEndorse count: " + user.getUserEndorsements();
+            } else {
+                throw new HandleNotRecognisedException("HANDLE HAS NOT BEEN FOUND IN THE SYSTEM");
+            }
+        }catch (HandleNotRecognisedException e){
+            System.out.println(" THE HANDLE HAS NOT BEEN FOUND IN THE SYSTEM, PLEASE ENTER A VALID HANDLE");
         }
         return account;
     }
@@ -282,11 +318,20 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public int createAccount(String handle, String description) throws IllegalHandleException, InvalidHandleException {
-        if (!checkUsername(handle)) {
-            throw new IllegalHandleException("THIS USERNAME HAS BEEN TAKEN");
-        }
-        else if(handle.length() > 30 || handle.length() == 0){
-            throw new InvalidHandleException("HANDLE OF INVALID LENGTH DETECTED! PLEASE INPUT A VALID NAME");
+        try {
+            if (!checkUsername(handle)) {
+                throw new IllegalHandleException("THIS USERNAME HAS BEEN TAKEN");
+            } else if (handle.length() > 30 || handle.length() == 0) {
+                throw new InvalidHandleException("HANDLE OF INVALID LENGTH DETECTED!");
+            }
+        }catch(IllegalHandleException | InvalidHandleException exception){
+            if(exception.getMessage().equals("THIS USERNAME HAS BEEN TAKEN")){
+                System.out.println("HANDLE ALREADY IN SYSTEM, PLEASE ENTER VALID HANDLE.");
+            }
+            else{
+                System.out.println("HANDLE OF INVALID LENGTH! PLEASE ENTER A VALID NAME");
+            }
+            return -2;
         }
         int id;
         if(usersList == null){
@@ -300,13 +345,12 @@ public class SocialMedia implements SocialMediaPlatform {
     }
 
     public boolean checkUsername(String handle){
-      for(int i = 0; i < usersList.size(); i ++) {
-        Account user = usersList.get(i) ;
-        String userName = user.getHandle() ;
-        if(handle.equals(userName)){
-          System.out.println("Username already taken") ;
-          return false;
-        } else {return true ;}}
+        for (Account user : usersList) {
+            String userName = user.getHandle();
+            if (handle.equals(userName)) {
+                return false;
+            }
+        }
       return true ;
     }
 
@@ -386,9 +430,8 @@ public class SocialMedia implements SocialMediaPlatform {
         for(Account user: socialMedia.usersList){
             System.out.println(user.getHandle());
         }
-        System.out.println(socialMedia.checkUsername("User1"));
-        System.out.println(socialMedia.checkUsername("User2"));
-        System.out.println(socialMedia.checkUsername("User3"));
+        socialMedia.createAccount("User2","dfkjhsadkljf");
+        socialMedia.showAccount("User5");
 
     }
 }
