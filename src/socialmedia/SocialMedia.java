@@ -246,7 +246,17 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public void erasePlatform() {
-
+        for(Account account: usersList){
+            account.getUserPosts().clear();
+        }
+        usersList.clear();
+        for(Posts posts: userPosts){
+            posts.getPostChildrenList().clear();
+            posts.getEndorsements().clear();
+            posts.clearAccount();
+        }
+        userPosts.clear();
+        DELETED_USER.getUserPosts().clear();
     }
 
     @Override
@@ -261,51 +271,32 @@ public class SocialMedia implements SocialMediaPlatform {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void loadPlatform(String filename) throws IOException, ClassNotFoundException {
-        FileInputStream fileInput = new FileInputStream(filename + ".ser");
-        boolean b = true;
-        ArrayList<Object> fileObjects = new ArrayList<>();
-        ObjectInputStream objectStore = new ObjectInputStream(fileInput);
-        Object obj = null;
-        try{
-        while((obj = objectStore.readObject()) != null){
-            fileObjects.add(obj);
-        }} catch(Exception e){
-            System.out.println("problem");
-        }
-        objectStore.close();
-        fileInput.close();
-        for(int i=0; i<fileObjects.size(); i++) {
-            System.out.println(fileObjects.size());
-            if (((Account) fileObjects.get(i)).getHandle().equals("[DELETED_USER]")) {
-                this.DELETED_USER = (Account) fileObjects.get(i);
-                continue;
-            }
-            ArrayList <Object> arrayList = (ArrayList) fileObjects.get(i);
-            for(int a=0; a < arrayList.size(); a++){
-                try{
-                    usersList.add((Account) arrayList.get(a));
-                } catch(Exception e){
-                    userPosts.add((Posts) arrayList.get(a));
-                }
-            }
-             }}
-
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename + ".ser"));
+        usersList = (ArrayList<Account>) ois.readObject();
+        userPosts = (ArrayList<Posts>) ois.readObject();
+        DELETED_USER = (Account) ois.readObject();
+        ois.close();
+    }
 
     @Override
     public int createAccount(String handle, String description) throws IllegalHandleException, InvalidHandleException {
-        if (checkUsername(handle)){
-          int id;
-          if(usersList == null){
-              id = 0;
-          }else{
-              id = usersList.size();
-          }
-          Account user = new Account(handle,description, id);
-          usersList.add(user);
-          return user.getId();
+        if (!checkUsername(handle)) {
+            throw new IllegalHandleException("THIS USERNAME HAS BEEN TAKEN");
         }
-        return 0;
+        else if(handle.length() > 30 || handle.length() == 0){
+            throw new InvalidHandleException("HANDLE OF INVALID LENGTH DETECTED! PLEASE INPUT A VALID NAME");
+        }
+        int id;
+        if(usersList == null){
+            id = 0;
+        }else{
+            id = usersList.size();
+        }
+        Account user = new Account(handle,description, id);
+        usersList.add(user);
+        return user.getId();
     }
 
     public boolean checkUsername(String handle){
@@ -314,7 +305,7 @@ public class SocialMedia implements SocialMediaPlatform {
         String userName = user.getHandle() ;
         if(handle.equals(userName)){
           System.out.println("Username already taken") ;
-          return false ;
+          return false;
         } else {return true ;}}
       return true ;
     }
@@ -390,7 +381,14 @@ public class SocialMedia implements SocialMediaPlatform {
 
     public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException, NotActionablePostException, PostIDNotRecognisedException, IOException, ClassNotFoundException {
         SocialMedia socialMedia = new SocialMedia();
-        socialMedia.loadPlatform("try1");
+        socialMedia.loadPlatform("test");
         System.out.println(socialMedia.showPostChildrenDetails(0));
+        for(Account user: socialMedia.usersList){
+            System.out.println(user.getHandle());
+        }
+        System.out.println(socialMedia.checkUsername("User1"));
+        System.out.println(socialMedia.checkUsername("User2"));
+        System.out.println(socialMedia.checkUsername("User3"));
+
     }
 }
