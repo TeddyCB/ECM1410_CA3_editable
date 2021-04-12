@@ -104,148 +104,237 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public int createPost(String handle, String message) throws HandleNotRecognisedException, InvalidPostException {
-        if(message.length() > 100 ) {
-            System.out.println("Message too long, please keep under 100 characters.") ;
-            return -1 ;
-        } int id;
-        if(userPosts == null){
-            id = 0;
-        }else{
-            id = userPosts.size();
-        }
-        for(int i = 0; i < usersList.size(); i ++) {
-            Account user = usersList.get(i) ;
-            String userName = user.getHandle() ;
-            if(handle.equals(userName)){
-                Posts posts = new Posts(user, message, id) ;
-                userPosts.add(posts) ;
-                user.addUserPosts(posts) ;
-            } }
-        return id;
+        int id = -1;
+        boolean handleNotRecognised = false;
+        try{
+            if(message.length() > 100 ) {
+                throw new InvalidPostException("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS");
+            }
+            if(userPosts == null){
+                id = 0;
+            }else{
+                id = userPosts.size();
+            }
+            Account user = new Account();
+            for(int i = 0; i < usersList.size(); i ++) {
+                user = usersList.get(i) ;
+                String userName = user.getHandle() ;
+                if(handle.equals(userName)){
+                    handleNotRecognised = true;
+                    Posts posts = new Posts(user, message, id) ;
+                    userPosts.add(posts) ;
+                    user.addUserPosts(posts) ;
+                } } if(!handleNotRecognised){
+                throw new HandleNotRecognisedException("HANDLE NOT RECOGNIZED EXCEPTION, PLEASE ENTER VALID HANDLE");
+                }}
+        catch(HandleNotRecognisedException| InvalidPostException e){
+            if(e.getMessage().equals("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS")){
+            System.out.println("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS");
+        }  else{ System.out.println("HANDLE NOT RECOGNIZED EXCEPTION, PLEASE ENTER VALID HANDLE");}
+    } return id;
     }
 
     @Override//handle is the account endorsing a post. id of original post
     public int endorsePost(String handle, int id) throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException {
         Posts endorsedPost = new Posts(); //content of post getting endorsed/retweeted
         Account user = new Account();//the account linked to the retweet
-        for(Posts post: userPosts){
-            if(post.getPostID() == id){
-                endorsedPost = post;
-                break;
+        boolean handleRecognised = false;
+        boolean postIDRecognised = false;
+        try{
+            for(Posts post: userPosts){
+                if(post.getPostID() == id){
+                    endorsedPost = post;
+                    postIDRecognised = true;
+                    break;
+                }
             }
-        }
-        for(Account account: usersList){
-            if(account.getHandle().equals(handle)){
-                user = account;
-                break;
+            if(!postIDRecognised){
+                throw new PostIDNotRecognisedException("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID ID");
             }
+            for(Account account: usersList){
+                if(account.getHandle().equals(handle)){
+                    user = account;
+                    handleRecognised = true ;
+                    break;
+                }
+            }
+            if(!handleRecognised){
+                throw new HandleNotRecognisedException("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID HANDLE");
+            } if(endorsedPost.isEndorsement()){
+                throw new NotActionablePostException("NOT ACTIONABLE POST EXCEPTION, PLEASE SELECT ANOTHER POST TO ENDORSE");
+            }
+            Endorsement endorsement = new Endorsement(user, userPosts.size());
+            endorsement.formatEndorsement(endorsedPost);
+            userPosts.add(endorsement);
+            endorsedPost.addEndorsementCount();
+            endorsedPost.addEndorsement(endorsement);
+            user.addUserPosts(endorsement);
+            return endorsement.getPostID(); }
+        catch(HandleNotRecognisedException | PostIDNotRecognisedException | NotActionablePostException e){
+            if(e.getMessage().equals("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID ID")){
+                System.out.println("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID ID");
+            }
+            else if(e.getMessage().equals("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID HANDLE")){
+                System.out.println("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID HANDLE");
+            } else {System.out.println("NOT ACTIONABLE POST EXCEPTION, PLEASE SELECT ANOTHER POST TO ENDORSE");}
+            return -1;
         }
-        Endorsement endorsement = new Endorsement(user, userPosts.size());
-        endorsement.formatEndorsement(endorsedPost);
-        userPosts.add(endorsement);
-        endorsedPost.addEndorsementCount();
-        endorsedPost.addEndorsement(endorsement);
-        user.addUserPosts(endorsement);
-        return endorsement.getPostID();
     }
 
     @Override //handle is the username of the account commenting, id stands for the id of the post, message stands for comment content
     public int commentPost(String handle, int id, String message) throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException, InvalidPostException {
-
+        boolean handleRecognised = false;
+        boolean postIDRecognised = false;
         Posts parentPost = new Posts() ;
-        int commentID = userPosts.size() ;
-        for(int i = 0; i < userPosts.size(); i ++) {
-            Posts post = userPosts.get(i) ;
-            if(post.getPostID() == id){
-                if(post.isEndorsement() || post.isDeleted()){
-                    System.out.println("Tried to comment on Endorsement or Deleted Post! Please only comment on available posts/comments!");
-                    return -1;
-                }
-                parentPost = post ;
-                break;
-            } }
-        for(int i = 0; i < usersList.size(); i ++) {
-            Account user = usersList.get(i);
-            String userName = user.getHandle();
-            if (handle.equals(userName)) {
-                Comments userComment = new Comments(user, message, commentID);
-                userComment.setParentPost(parentPost);
-                parentPost.setChildrenList(userComment); //Set comment as a children of the parentPost
-                parentPost.addCommentCount();
-                user.addUserPosts(userComment);
-                userPosts.add(userComment);
+        try{
+            if(message.length() > 100){
+                throw new InvalidPostException();
             }
-        } return commentID ; //newID for comment
+            int commentID = userPosts.size() ;
+            for(int i = 0; i < userPosts.size(); i ++) {
+                Posts post = userPosts.get(i) ;
+                if(post.getPostID() == id){
+                    postIDRecognised = true;
+                    if(post.isEndorsement() || post.isDeleted()){
+                        throw new NotActionablePostException("Tried to comment on Endorsement or Deleted Post! Please only comment on available posts/comments!");
+                    }
+                    parentPost = post ;
+                    break;
+                } }
+            if(!postIDRecognised){
+                throw new PostIDNotRecognisedException("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID ID");
+            }
+            for(int i = 0; i < usersList.size(); i ++) {
+                Account user = usersList.get(i);
+                String userName = user.getHandle();
+                if (handle.equals(userName)) {
+                    handleRecognised = true;
+                    Comments userComment = new Comments(user, message, commentID);
+                    userComment.setParentPost(parentPost);
+                    parentPost.setChildrenList(userComment); //Set comment as a children of the parentPost
+                    parentPost.addCommentCount();
+                    user.addUserPosts(userComment);
+                    userPosts.add(userComment);
+                }
+            } if(!handleRecognised){
+                throw new HandleNotRecognisedException("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID HANDLE");
+            }
+            return commentID ; }
+        catch(HandleNotRecognisedException | PostIDNotRecognisedException | NotActionablePostException | InvalidPostException e){
+            if(e.getMessage().equals("Tried to comment on Endorsement or Deleted Post! Please only comment on available posts/comments!")){
+                System.out.println("Tried to comment on Endorsement or Deleted Post! Please only comment on available posts/comments!");
+            } else if(e.getMessage().equals("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID ID")){
+                System.out.println("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID ID");
+            } else {
+                System.out.println("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID HANDLE");
+            } return -1;
+        }
     }
 
     @Override
     public void deletePost(int id) throws PostIDNotRecognisedException {
         Posts targetPost = new Posts();
-        for(Posts post: userPosts){
-            if(post.getPostID() == id){
-                targetPost = post;
-                break;
-            }
-        }
-        targetPost.setPostContent("<The original content was removed from the system and is no longer available.>");
-        targetPost.setDeleted(true);
-        for(Posts Endorsement: targetPost.getEndorsements()){
+        boolean postIDRecognised = false;
+        try{
             for(Posts post: userPosts){
-                if(post.getPostID() == Endorsement.getPostID()){
-                    userPosts.remove(post);
+                if(post.getPostID() == id){
+                    postIDRecognised = true;
+                    targetPost = post;
                     break;
                 }
+            } if(!postIDRecognised){
+                throw new PostIDNotRecognisedException("POST ID NOT RECOGNISE EXCEPTION, PLEASE ENTER VALID ID");
             }
-            Endorsement.clearAll();
+            targetPost.setPostContent("<The original content was removed from the system and is no longer available.>");
+            targetPost.setDeleted(true);
+            for(Posts Endorsement: targetPost.getEndorsements()){
+                for(Posts post: userPosts){
+                    if(post.getPostID() == Endorsement.getPostID()){
+                        userPosts.remove(post);
+                        break;
+                    }
+                }
+                Endorsement.clearAll();
+            }}
+        catch(PostIDNotRecognisedException e){
+            System.out.println("POST ID NOT RECOGNISE EXCEPTION, PLEASE ENTER VALID ID");
         }
     }
 
     @Override
     public String showIndividualPost(int id) throws PostIDNotRecognisedException {
+        boolean postIDRecognised = false;
         Posts targetPost = new Posts();
         String individualPost;
-        for(Posts post: userPosts){
-            if(post.getPostID() == id){
-                targetPost = post;
-                break;
+        try {
+            for (Posts post : userPosts) {
+                if (post.getPostID() == id) {
+                    postIDRecognised = true;
+                    targetPost = post;
+                    break;
+                }
             }
+            if (!postIDRecognised) {
+                throw new PostIDNotRecognisedException("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID ID");
+            }
+            individualPost = "ID: " + targetPost.getPostID() + "\nAccount: " + targetPost.getAccount().getHandle()
+                    + "\nNo. endorsements: " + targetPost.getEndorsementCount() + " | No. comments: " + targetPost.getCommentCount() + "\n" + targetPost.getPostContent() + " \n";
+            return individualPost;
+        } catch(PostIDNotRecognisedException e){
+           String message = "POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID ID";
+           return message;
         }
-        individualPost = "ID: " + targetPost.getPostID() + "\nAccount: " + targetPost.getAccount().getHandle()
-                + "\nNo. endorsements: " + targetPost.getEndorsementCount() + " | No. comments: " + targetPost.getCommentCount() + "\n" + targetPost.getPostContent() +" \n";
-
-        return individualPost;
     }
 
     public void clearStringBuilder(){
         childrenPostContent.setLength(0);
     }
     public void FormatStringBuilder(Posts post) throws PostIDNotRecognisedException {
-        if(post != null){
-            String individualPost;
-            if(post.isComment()){
-                childrenPostContent.append(("   ").repeat(Math.max(0,post.getDepth()) - 1)).append("| >");
-                individualPost = showIndividualPost(post.getPostID()).replace("\n","\n" + ("   ").repeat(Math.max(0,post.getDepth())));
-            }else{
-                individualPost = showIndividualPost(post.getPostID());
-            }
-            childrenPostContent.append(individualPost).append("|\n");
-            for(Posts child: post.getPostChildrenList()){
-                FormatStringBuilder(child);
-            }
+        try{
+            if(post != null){
+                String individualPost;
+                if(post.isComment()){
+                    childrenPostContent.append(("   ").repeat(Math.max(0,post.getDepth()) - 1)).append("| >");
+                    individualPost = showIndividualPost(post.getPostID()).replace("\n","\n" + ("   ").repeat(Math.max(0,post.getDepth())));
+                }else{
+                    individualPost = showIndividualPost(post.getPostID());
+                }
+                childrenPostContent.append(individualPost).append("|\n");
+                for(Posts child: post.getPostChildrenList()){
+                    FormatStringBuilder(child);
+                }
+            }}
+        catch(PostIDNotRecognisedException e){
+            System.out.println("PROBLEM WITH showingIndividualPosts()");
         }
     }
 
     @Override
     public StringBuilder showPostChildrenDetails(int id) throws PostIDNotRecognisedException, NotActionablePostException {
+        boolean postIDRecognised = false;
         clearStringBuilder();
         Posts parentPost = new Posts() ;
-        for(int i = 0; i < userPosts.size(); i ++) {
-            Posts post = userPosts.get(i) ;
-            if(post.getPostID() == id){
-                parentPost = post;
-            } }
-        FormatStringBuilder(parentPost);
-        return childrenPostContent;
+        try{
+            for(int i = 0; i < userPosts.size(); i ++) {
+                Posts post = userPosts.get(i) ;
+                if(post.getPostID() == id){
+                    postIDRecognised = true;
+                    parentPost = post;
+                    break;
+                } } if(!postIDRecognised){
+                throw new PostIDNotRecognisedException("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID");
+            } if(parentPost.isEndorsement()){
+                throw new NotActionablePostException("NOT ACTIONABLE POST EXCEPTION, PLEASE ENTER ANOTHER POST ID");
+            }
+            FormatStringBuilder(parentPost);
+            return childrenPostContent;}
+        catch(PostIDNotRecognisedException | NotActionablePostException e){
+            if(e.getMessage().equals("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID")){
+                System.out.println("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID");
+            } else {
+                System.out.println("NOT ACTIONABLE POST EXCEPTION, PLEASE ENTER ANOTHER POST ID");
+            } return null;
+        }
     }
 
     @Override
@@ -297,23 +386,31 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public void savePlatform(String filename) throws IOException {
-        FileOutputStream fileStore = new FileOutputStream(filename + ".ser");
-        ObjectOutputStream objectStore = new ObjectOutputStream(fileStore);
-        objectStore.writeObject(usersList);
-        objectStore.writeObject(userPosts);
-        objectStore.writeObject(DELETED_USER);
-        objectStore.close();
-        fileStore.close();
+        try{
+            FileOutputStream fileStore = new FileOutputStream(filename + ".ser");
+            ObjectOutputStream objectStore = new ObjectOutputStream(fileStore);
+            objectStore.writeObject(usersList);
+            objectStore.writeObject(userPosts);
+            objectStore.writeObject(DELETED_USER);
+            objectStore.close();
+            fileStore.close(); }
+        catch(IOException e){
+            System.out.println("FILE NOT FOUND");
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void loadPlatform(String filename) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename + ".ser"));
-        usersList = (ArrayList<Account>) ois.readObject();
-        userPosts = (ArrayList<Posts>) ois.readObject();
-        DELETED_USER = (Account) ois.readObject();
-        ois.close();
+        try{
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename + ".ser"));
+            usersList = (ArrayList<Account>) ois.readObject();
+            userPosts = (ArrayList<Posts>) ois.readObject();
+            DELETED_USER = (Account) ois.readObject();
+            ois.close();}
+        catch(IOException | ClassNotFoundException e){
+            System.out.println("EITHER FILE NOT FOUND OR CLASS NOT FOUND");
+        }
     }
 
     @Override
@@ -357,30 +454,47 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public void removeAccount(String handle) throws HandleNotRecognisedException {
-        for(int i = 0; i < usersList.size(); i++){
-            Account user = usersList.get(i);
-            if(user.getHandle().equals(handle)){
-                for(Posts userPost : user.getUserPosts()){
-                    userPost.setAccount(DELETED_USER);
-                    userPost.setPostContent("<The original content was removed from the system and is no longer available.>");
-                    DELETED_USER.addUserPosts(userPost);
+        boolean handleRecognised = false;
+        try{
+            for(int i = 0; i < usersList.size(); i++){
+                Account user = usersList.get(i);
+                if(user.getHandle().equals(handle)){
+                    handleRecognised = true;
+                    for(Posts userPost : user.getUserPosts()){
+                        userPost.setAccount(DELETED_USER);
+                        userPost.setPostContent("<The original content was removed from the system and is no longer available.>");
+                        DELETED_USER.addUserPosts(userPost);
+                    }
+                    usersList.remove(user);
+                    break;
                 }
-                usersList.remove(user);
-                break;
-            }
+            } if(!handleRecognised){
+                throw new HandleNotRecognisedException("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID HANDLE");
+            } }
+        catch(HandleNotRecognisedException e){
+            System.out.println("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID HANDLE");
         }
     }
 
     @Override
     public void updateAccountDescription(String handle, String description) throws HandleNotRecognisedException {
-        for(int i = 0; i < usersList.size(); i ++) {
-            Account user = usersList.get(i) ;
-            String userName = user.getHandle() ;
-            if(handle.equals(userName)){
-                user.changeDescription(description) ;
-                break ;
+        boolean handleRecognised = false;
+        try{
+            for(int i = 0; i < usersList.size(); i ++) {
+                Account user = usersList.get(i) ;
+                String userName = user.getHandle() ;
+                if(handle.equals(userName)){
+                    handleRecognised = true;
+                    user.changeDescription(description) ;
+                    break ;
+                } } if(!handleRecognised){
+                throw new HandleNotRecognisedException("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID HANDLE");
             }
-    } }
+        }
+        catch(HandleNotRecognisedException e){
+            System.out.println("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID HANDLE");
+        }
+    }
 
     @Override
     public int getNumberOfAccounts() {
@@ -425,13 +539,11 @@ public class SocialMedia implements SocialMediaPlatform {
 
     public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException, NotActionablePostException, PostIDNotRecognisedException, IOException, ClassNotFoundException {
         SocialMedia socialMedia = new SocialMedia();
-        socialMedia.loadPlatform("test");
+        socialMedia.loadPlatform("try1");
         System.out.println(socialMedia.showPostChildrenDetails(0));
         for(Account user: socialMedia.usersList){
             System.out.println(user.getHandle());
         }
-        socialMedia.createAccount("User2","dfkjhsadkljf");
-        socialMedia.showAccount("User5");
 
     }
 }
