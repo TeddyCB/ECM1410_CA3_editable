@@ -93,34 +93,31 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public int createPost(String handle, String message) throws HandleNotRecognisedException, InvalidPostException {
-        int id = -1;
+        int id;
         boolean handleNotRecognised = false;
-        try{
-            if(message.length() > 100 ) {
-                throw new InvalidPostException("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS");
+        if (message.length() > 100) {
+            throw new InvalidPostException("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS");
+        }
+        if (userPosts == null) {
+            id = 0;
+        } else {
+            id = userPosts.size();
+        }
+        Account user = new Account();
+        for (int i = 0; i < usersList.size(); i++) {
+            user = usersList.get(i);
+            String userName = user.getHandle();
+            if (handle.equals(userName)) {
+                handleNotRecognised = true;
+                Posts posts = new Posts(user, message, id);
+                userPosts.add(posts);
+                user.addUserPosts(posts);
             }
-            if(userPosts == null){
-                id = 0;
-            }else{
-                id = userPosts.size();
-            }
-            Account user = new Account();
-            for(int i = 0; i < usersList.size(); i ++) {
-                user = usersList.get(i) ;
-                String userName = user.getHandle() ;
-                if(handle.equals(userName)){
-                    handleNotRecognised = true;
-                    Posts posts = new Posts(user, message, id) ;
-                    userPosts.add(posts) ;
-                    user.addUserPosts(posts) ;
-                } } if(!handleNotRecognised){
-                throw new HandleNotRecognisedException("HANDLE NOT RECOGNIZED EXCEPTION, PLEASE ENTER VALID HANDLE");
-                }}
-        catch(HandleNotRecognisedException| InvalidPostException e){
-            if(e.getMessage().equals("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS")){
-            System.out.println("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS");
-        }  else{ System.out.println("HANDLE NOT RECOGNIZED EXCEPTION, PLEASE ENTER VALID HANDLE");}
-    } return id;
+        }
+        if (!handleNotRecognised) {
+            throw new HandleNotRecognisedException("HANDLE NOT RECOGNIZED EXCEPTION, PLEASE ENTER VALID HANDLE");
+        }
+        return id;
     }
 
     @Override//handle is the account endorsing a post. id of original post
