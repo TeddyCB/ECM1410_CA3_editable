@@ -1,3 +1,5 @@
+package socialmedia;
+
 import socialmedia.AccountIDNotRecognisedException;
 import socialmedia.BadSocialMedia;
 import socialmedia.IllegalHandleException;
