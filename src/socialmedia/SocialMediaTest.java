@@ -113,7 +113,6 @@ public class SocialMediaTest {
                 try {
                     platform.removeAccount(handle);
                     System.out.println("Account removed. ");
-                    System.out.println(platform.showAccount("handle"));
                 } catch (HandleNotRecognisedException e) {
                     e.printStackTrace();
                 }

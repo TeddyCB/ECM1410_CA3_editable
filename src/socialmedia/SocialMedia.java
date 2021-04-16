@@ -3,10 +3,27 @@ package socialmedia;
 import java.io.*;
 import java.util.ArrayList;
 
+/**
+ * SocialMedia class implements the SocialMediaPlatform interface
+ */
 public class SocialMedia implements SocialMediaPlatform {
+    /**
+     * usersList - ArrayList containing all users in the system
+     */
     private ArrayList<Account> usersList = new ArrayList<>();
+    /**
+     * userPosts - ArrayList containing all Posts in the system
+     */
     private ArrayList<Posts> userPosts = new ArrayList<>();
+
+    /**
+     * childrenPostContent - used for generating a StringBuilder for showPostChildrenDetails
+     */
     private StringBuilder childrenPostContent = new StringBuilder();
+
+    /**
+     * DELETED_USER - global account for all deleted user content to go to/
+     */
     private Account DELETED_USER;
     {
         try {
@@ -34,12 +51,25 @@ public class SocialMedia implements SocialMediaPlatform {
 
     }
 
+    /**
+     * @param oldHandle account's old handle.
+     * @param newHandle account's new handle.
+     * @throws HandleNotRecognisedException if Handle is not in system
+     * @throws IllegalHandleException if newHandle is the same as a Handle already in the system
+     * @throws InvalidHandleException if newHandle contains illegal characters, is too long, or empty
+     */
     @Override
     public void changeAccountHandle(String oldHandle, String newHandle) throws HandleNotRecognisedException, IllegalHandleException, InvalidHandleException {
-        boolean InSystem = false;
-        boolean IllegalHandle = false;
+        boolean InSystem = false; //to check if the oldHandle is in the system
+        boolean IllegalHandle = false; //to check if the new handle is already in the system
         if (newHandle.length() > 30) {
             throw new InvalidHandleException("HANDLE TOO LONG!");
+        }
+        if( newHandle.length() == 0 ){
+            throw new InvalidHandleException("HANDLE LENGTH 0");
+        }
+        if(newHandle.contains(" ")){
+           throw new InvalidHandleException("CONTAINS WHITE SPACE");
         }
         for (Account user : usersList) {
             if (user.getHandle().equals(oldHandle)) {
@@ -51,8 +81,9 @@ public class SocialMedia implements SocialMediaPlatform {
             throw new HandleNotRecognisedException("HANDLE HAS NOT BEEN FOUND IN THE SYSTEM");
         }
         for (Account user : usersList) {
-            if (user.getHandle().equals("newHandle")) {
+            if (user.getHandle().equals(newHandle)) {
                 IllegalHandle = true;
+                break;
             }
         }
         if (IllegalHandle) {
@@ -71,7 +102,7 @@ public class SocialMedia implements SocialMediaPlatform {
     @Override
     public String showAccount(String handle) throws HandleNotRecognisedException {
         Account user = new Account();
-        String account = "";
+        String account;
         boolean HandleRecognised = false;
         for(int i = 0; i < usersList.size(); i ++) {
             user = usersList.get(i);
@@ -98,12 +129,15 @@ public class SocialMedia implements SocialMediaPlatform {
         if (message.length() > 100) {
             throw new InvalidPostException("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS");
         }
+        if(message.length() == 0){
+            throw new InvalidPostException("MESSAGE CONTAINS NOTHING!");
+        }
         if (userPosts == null) {
             id = 0;
         } else {
             id = userPosts.size();
         }
-        Account user = new Account();
+        Account user;
         for (int i = 0; i < usersList.size(); i++) {
             user = usersList.get(i);
             String userName = user.getHandle();
@@ -164,7 +198,10 @@ public class SocialMedia implements SocialMediaPlatform {
         boolean postIDRecognised = false;
         Posts parentPost = new Posts() ;
         if(message.length() > 100){
-            throw new InvalidPostException();
+            throw new InvalidPostException("Comment too long!");
+        }
+        if(message.length() == 0){
+            throw new InvalidPostException("Comment is empty");
         }
         int commentID = userPosts.size() ;
         for(int i = 0; i < userPosts.size(); i ++) {
