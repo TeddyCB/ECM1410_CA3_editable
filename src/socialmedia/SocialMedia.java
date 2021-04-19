@@ -109,12 +109,12 @@ public class SocialMedia implements SocialMediaPlatform {
     public String showAccount(String handle) throws HandleNotRecognisedException {
         Account user = new Account();
         String account;
-        boolean HandleRecognised = false;
+        boolean HandleRecognised = false; //To check if handle is in the system
         for(int i = 0; i < usersList.size(); i ++) {
             user = usersList.get(i);
             String userName = user.getHandle();
             if (handle.equals(userName)) {
-                HandleRecognised = true;
+                HandleRecognised = true; //if handle recognised change boolean to true
                 break;
             }
         }
@@ -123,53 +123,54 @@ public class SocialMedia implements SocialMediaPlatform {
             account = "ID: " + user.getId() + "\nHandle: " + user.getHandle()
                     + "\nPost count: " + user.getUserPosts().size() + "\nEndorse count: " + user.getUserEndorsements();
         } else {
-            throw new HandleNotRecognisedException("HANDLE HAS NOT BEEN FOUND IN THE SYSTEM");
+            throw new HandleNotRecognisedException("HANDLE HAS NOT BEEN FOUND IN THE SYSTEM"); //if handle not recongnized throw exception
         }
         return account;
     }
 
     @Override
     public int createPost(String handle, String message) throws HandleNotRecognisedException, InvalidPostException {
-        int id;
-        boolean handleNotRecognised = false;
+        int id; // post id
+        boolean handleNotRecognised = false; // to check if the handle is in the system
         if (message.length() > 100) {
-            throw new InvalidPostException("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS");
+            throw new InvalidPostException("INVALID POST EXCEPTION, MESSAGE TOO LONG, KEEP BELOW 100 CHARACTERS"); // throw exception if message too long
         }
         if(message.length() == 0){
-            throw new InvalidPostException("MESSAGE CONTAINS NOTHING!");
+            throw new InvalidPostException("MESSAGE CONTAINS NOTHING!"); // throw exception if message is empty
         }
         if (userPosts == null) {
-            id = 0;
+            id = 0; // if this is the first post in the system by any user, id equals 0
         } else {
-            id = userPosts.size();
+            id = userPosts.size(); // assign id to post
         }
         Account user;
         for (int i = 0; i < usersList.size(); i++) {
             user = usersList.get(i);
             String userName = user.getHandle();
             if (handle.equals(userName)) {
-                handleNotRecognised = true;
+                handleNotRecognised = true; // if handle recognized change boolean to true
                 Posts posts = new Posts(user, message, id);
                 userPosts.add(posts);
                 user.addUserPosts(posts);
             }
         }
         if (!handleNotRecognised) {
-            throw new HandleNotRecognisedException("HANDLE NOT RECOGNIZED EXCEPTION, PLEASE ENTER VALID HANDLE");
+            throw new HandleNotRecognisedException("HANDLE NOT RECOGNIZED EXCEPTION, PLEASE ENTER VALID HANDLE"); // if handle not recognized throw exception
         }
         return id;
     }
 
-    @Override//handle is the account endorsing a post. id of original post
-    public int endorsePost(String handle, int id) throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException {
+    @Override
+    //handle is the account endorsing a post. id of original post
+    public int endorsePost(String handle, int id) throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException { 
         Posts endorsedPost = new Posts(); //content of post getting endorsed/retweeted
         Account user = new Account();//the account linked to the retweet
-        boolean handleRecognised = false;
-        boolean postIDRecognised = false;
+        boolean handleRecognised = false; // to check if handle is in the system
+        boolean postIDRecognised = false; // to check if post id is recognized
         for(Posts post: userPosts){
-            if(post.getPostID() == id){
+            if(post.getPostID() == id){ 
                 endorsedPost = post;
-                postIDRecognised = true;
+                postIDRecognised = true; // if post id recognized change boolean to true
                 break;
             }
             }
@@ -179,15 +180,15 @@ public class SocialMedia implements SocialMediaPlatform {
         for(Account account: usersList){
             if(account.getHandle().equals(handle)){
                 user = account;
-                handleRecognised = true ;
+                handleRecognised = true ; // if handle recognized change boolean to true
                 break;
             }
         }
         if(!handleRecognised){
-            throw new HandleNotRecognisedException("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID HANDLE");
+            throw new HandleNotRecognisedException("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID HANDLE"); // throw exception if handle not recognized
         }
         if(endorsedPost.isEndorsement()){
-            throw new NotActionablePostException("NOT ACTIONABLE POST EXCEPTION, PLEASE SELECT ANOTHER POST TO ENDORSE");
+            throw new NotActionablePostException("NOT ACTIONABLE POST EXCEPTION, PLEASE SELECT ANOTHER POST TO ENDORSE"); // throw exception if post is an endorsement
         }
         Endorsement endorsement = new Endorsement(user, userPosts.size());
         endorsement.formatEndorsement(endorsedPost);
@@ -200,20 +201,20 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override //handle is the username of the account commenting, id stands for the id of the post, message stands for comment content
     public int commentPost(String handle, int id, String message) throws HandleNotRecognisedException, PostIDNotRecognisedException, NotActionablePostException, InvalidPostException {
-        boolean handleRecognised = false;
-        boolean postIDRecognised = false;
+        boolean handleRecognised = false; // to check if handle is recognized
+        boolean postIDRecognised = false; // to check if post id is recognized 
         Posts parentPost = new Posts() ;
         if(message.length() > 100){
-            throw new InvalidPostException("Comment too long!");
+            throw new InvalidPostException("Comment too long!"); // throw exception if message too long
         }
         if(message.length() == 0){
-            throw new InvalidPostException("Comment is empty");
+            throw new InvalidPostException("Comment is empty");  //throw exception if comment is empty
         }
         int commentID = userPosts.size() ;
         for(int i = 0; i < userPosts.size(); i ++) {
             Posts post = userPosts.get(i) ;
             if(post.getPostID() == id){
-                postIDRecognised = true;
+                postIDRecognised = true; // if post id is recognised change boolean PostIDRecognised to true
                 if(post.isEndorsement() || post.isDeleted()){
                     throw new NotActionablePostException("Tried to comment on Endorsement or Deleted Post! Please only comment on available posts/comments!");
                 }
@@ -227,7 +228,7 @@ public class SocialMedia implements SocialMediaPlatform {
             Account user = usersList.get(i);
             String userName = user.getHandle();
             if (handle.equals(userName)) {
-                handleRecognised = true;
+                handleRecognised = true; // if handle recognised change boolean to true 
                 Comments userComment = new Comments(user, message, commentID);
                 userComment.setParentPost(parentPost);
                 parentPost.setChildrenList(userComment); //Set comment as a children of the parentPost
@@ -237,7 +238,7 @@ public class SocialMedia implements SocialMediaPlatform {
             }
         }
         if(!handleRecognised){
-            throw new HandleNotRecognisedException("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID HANDLE");
+            throw new HandleNotRecognisedException("HANDLE NOT RECOGNISED EXCEPTION, PLEASE ENTER VALID HANDLE"); // if handle not recognised throw exception
         }
         return commentID ;
     }
@@ -245,44 +246,44 @@ public class SocialMedia implements SocialMediaPlatform {
     @Override
     public void deletePost(int id) throws PostIDNotRecognisedException {
         Posts targetPost = new Posts();
-        boolean postIDRecognised = false;
+        boolean postIDRecognised = false; // to check if post id is recognised
         for (Posts post : userPosts) {
             if (post.getPostID() == id) {
-                postIDRecognised = true;
+                postIDRecognised = true; // if post id is recognised change boolean to true
                 targetPost = post;
                 break;
             }
         }
         if (!postIDRecognised) {
-            throw new PostIDNotRecognisedException("POST ID NOT RECOGNISE EXCEPTION, PLEASE ENTER VALID ID");
+            throw new PostIDNotRecognisedException("POST ID NOT RECOGNISE EXCEPTION, PLEASE ENTER VALID ID"); // throw excpetion if post id is not recongised 
         }
         targetPost.setPostContent("<The original content was removed from the system and is no longer available.>");
         targetPost.setDeleted(true);
         for (Posts Endorsement : targetPost.getEndorsements()) {
             for (Posts post : userPosts) {
                 if (post.getPostID() == Endorsement.getPostID()) {
-                    userPosts.remove(post);
+                    userPosts.remove(post); // remove from Posts ArrayList
                     break;
                 }
             }
-            Endorsement.clearAll();
+            Endorsement.clearAll(); // Clear all endorsements for that post
         }
     }
 
     @Override
     public String showIndividualPost(int id) throws PostIDNotRecognisedException {
-        boolean postIDRecognised = false;
+        boolean postIDRecognised = false; // to check if post id is recognised
         Posts targetPost = new Posts();
         String individualPost;
         for (Posts post : userPosts) {
             if (post.getPostID() == id) {
-                postIDRecognised = true;
+                postIDRecognised = true; // if post id is recongised change boolean to true 
                 targetPost = post;
                 break;
             }
         }
         if (!postIDRecognised) {
-            throw new PostIDNotRecognisedException("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID ID");
+            throw new PostIDNotRecognisedException("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID ID"); // throw excpetion if post id not recognised
         }
         individualPost = "ID: " + targetPost.getPostID() + "\nAccount: " + targetPost.getAccount().getHandle()
                 + "\nNo. endorsements: " + targetPost.getEndorsementCount() + " | No. comments: " + targetPost.getCommentCount() + "\n" + targetPost.getPostContent() + " \n";
@@ -294,16 +295,16 @@ public class SocialMedia implements SocialMediaPlatform {
     }
     public void FormatStringBuilder(Posts post) throws PostIDNotRecognisedException {
         if (post != null) {
-            String individualPost;
-            if (post.isComment()) {
-                childrenPostContent.append(("   ").repeat(Math.max(0, post.getDepth()) - 1)).append("| >");
-                individualPost = showIndividualPost(post.getPostID()).replace("\n", "\n" + ("   ").repeat(Math.max(0, post.getDepth())));
-            } else {
-                individualPost = showIndividualPost(post.getPostID());
+            String individualPost; // string to add to stringBuilder
+            if (post.isComment()) { // if post is a comment
+                childrenPostContent.append(("   ").repeat(Math.max(0, post.getDepth()) - 1)).append("| >"); // indent comments
+                individualPost = showIndividualPost(post.getPostID()).replace("\n", "\n" + ("   ").repeat(Math.max(0, post.getDepth()))); // string to add to stringBuilder
+            } else { // if it is not a comment
+                individualPost = showIndividualPost(post.getPostID()); 
             }
             childrenPostContent.append(individualPost).append("|\n");
-            for (Posts child : post.getPostChildrenList()) {
-                FormatStringBuilder(child);
+            for (Posts child : post.getPostChildrenList()) { // recursively called FormatStringBuilder for all comments in (original) post
+                FormatStringBuilder(child); 
             }
         }
     }
@@ -311,24 +312,24 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public StringBuilder showPostChildrenDetails(int id) throws PostIDNotRecognisedException, NotActionablePostException {
-        boolean postIDRecognised = false;
-        clearStringBuilder();
-        Posts parentPost = new Posts() ;
+        boolean postIDRecognised = false; // to check if post id is recognised
+        clearStringBuilder(); // clear old stringBuilder
+        Posts parentPost = new Posts() ; 
         for (int i = 0; i < userPosts.size(); i++) {
             Posts post = userPosts.get(i);
             if (post.getPostID() == id) {
-                postIDRecognised = true;
-                parentPost = post;
+                postIDRecognised = true; // if post recognised change boolean to true
+                parentPost = post; // parent post will be the original post of the thread, the parent to all all children posts
                 break;
             }
         }
-        if (!postIDRecognised) {
-            throw new PostIDNotRecognisedException("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID");
+        if (!postIDRecognised) { // if post id not recognised throw exception
+            throw new PostIDNotRecognisedException("POST ID NOT RECOGNISED EXCEPTION, PLEASE ENTER A VALID"); 
         }
         if (parentPost.isEndorsement()) {
-            throw new NotActionablePostException("NOT ACTIONABLE POST EXCEPTION, PLEASE ENTER ANOTHER POST ID");
+            throw new NotActionablePostException("NOT ACTIONABLE POST EXCEPTION, PLEASE ENTER ANOTHER POST ID"); // if parent post is and endorsement throw exception
         }
-        FormatStringBuilder(parentPost);
+        FormatStringBuilder(parentPost); // calls FormatStringBuilder
         return childrenPostContent;
     }
 
@@ -337,13 +338,13 @@ public class SocialMedia implements SocialMediaPlatform {
     public int getMostEndorsedPost() {
         Posts MostEndorsed = new Posts();
         for(Posts post : userPosts){
-            if(post.isEndorsement()){
+            if(post.isEndorsement()){  // if post is an endorsement
                 continue;
             }
-            if(MostEndorsed.getAccount() == null){
+            if(MostEndorsed.getAccount() == null){ // MostEndorsed is empty, set MostEndorsed to post
                 MostEndorsed = post;
             }
-            else if(MostEndorsed.getEndorsementCount() < post.getEndorsementCount()){
+            else if(MostEndorsed.getEndorsementCount() < post.getEndorsementCount()){ // comparison between posts
                 MostEndorsed = post;
             }
 
@@ -353,13 +354,13 @@ public class SocialMedia implements SocialMediaPlatform {
 
     @Override
     public int getMostEndorsedAccount() {
-        Account MostEndorsed = new Account();
+        Account MostEndorsed = new Account(); 
         for(Account user : usersList){
-            if(MostEndorsed.getHandle() == null){
-                MostEndorsed = user;
+            if(MostEndorsed.getHandle() == null){ // if (Account)MostEndorsed is empty, set (Account)MostEndoresed to user
+                MostEndorsed = user; 
             }
             else if(MostEndorsed.getUserEndorsements() < user.getUserEndorsements()){
-                MostEndorsed = user;
+                MostEndorsed = user; 
             }
         }
         return MostEndorsed.getId();
