@@ -63,42 +63,48 @@ public class SocialMedia implements SocialMediaPlatform {
         boolean InSystem = false; //to check if the oldHandle is in the system
         boolean IllegalHandle = false; //to check if the new handle is already in the system
         if (newHandle.length() > 30) {
+            //if handle is too long do
             throw new InvalidHandleException("HANDLE TOO LONG!");
         }
-        if( newHandle.length() == 0 ){
+        if( newHandle.length() == 0 ){ //if handle is empty do
             throw new InvalidHandleException("HANDLE LENGTH 0");
         }
-        if(newHandle.contains(" ")){
+        if(newHandle.contains(" ")){ //if handle contains white space, do
            throw new InvalidHandleException("CONTAINS WHITE SPACE");
         }
-        for (Account user : usersList) {
+        for (Account user : usersList) { //check if oldHandle is in the list of users
             if (user.getHandle().equals(oldHandle)) {
                 InSystem = true;
                 break;
             }
         }
-        if (!InSystem) {
+        if (!InSystem) { //if oldHandle is not in the list of users do
             throw new HandleNotRecognisedException("HANDLE HAS NOT BEEN FOUND IN THE SYSTEM");
         }
-        for (Account user : usersList) {
+        for (Account user : usersList) { // check if newHandle is in the list of users
             if (user.getHandle().equals(newHandle)) {
                 IllegalHandle = true;
                 break;
             }
         }
-        if (IllegalHandle) {
+        if (IllegalHandle) { //if newHandle is in the list of users do
             throw new IllegalHandleException("HANDLE ALREADY TAKEN");
         }
-        for(int i = 0; i < usersList.size(); i ++) {
+        for(int i = 0; i < usersList.size(); i ++) {//change handle
             Account user = usersList.get(i);
             String userName = user.getHandle();
-            if (oldHandle.equals(userName)) {
+            if (oldHandle.equals(userName)) {//find the handle
                 user.changeHandle(newHandle);
                 break;
             }
         }
     }
 
+    /**
+     * @param handle handle to identify the account.
+     * @return Formatted string to show the account
+     * @throws HandleNotRecognisedException if handle
+     */
     @Override
     public String showAccount(String handle) throws HandleNotRecognisedException {
         Account user = new Account();
