@@ -1,7 +1,7 @@
 package socialmedia;
 
 public class Comments extends Posts{
-    private Posts post ;
+    private Posts post;
 
     Comments(Account account, String postContent, int postID) {
         super(account, postContent, postID);

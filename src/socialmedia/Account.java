@@ -4,25 +4,53 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ * A class that contains all account functionalities for the social media platform
+ */
 public class Account implements Serializable {
+    /**
+     * account id
+     */
     private int id;
+    /**
+     * account handle
+     */
     private String handle; //username
+    /**
+     * account description
+     */
     private String description;
+    /**
+     * account posts
+     */
     private ArrayList<Posts> userPosts = new ArrayList<>();
+    /**
+     * account endorsements
+     */
     private int UserEndorsements = 0;
-    Account(){
 
+    /**
+     * standard constructor
+     */
+    Account(){
     }
 
-     Account(String handle, String description, int id) throws  IllegalHandleException, InvalidHandleException{
+    /** Main constructor for the account
+     * @param handle account's handle
+     * @param description account's description
+     * @param id account's id
+     */
+     Account(String handle, String description, int id){
         changeHandle(handle);
         this.description = description;
         this.id = id;
      }
-     public void clearAccount(){
-         id = -1;
-         handle = null;
-         description = null;
+
+    /**Method that sets the id
+     * @param id account's id
+     */
+     public void setId(int id){
+        this.id = id;
      }
 
     public String getHandle() {
@@ -32,12 +60,21 @@ public class Account implements Serializable {
     public String getDescription() {
         return description;
     }
+
+    /**Method that changes the handle
+     * @param newHandle the new handle for the account
+     */
     public void changeHandle(String newHandle){
          this.handle = newHandle;
     }
+
+    /**
+     * Method to increase the endorsement
+     */
     public void addUserEndorsements(){
          UserEndorsements += 1;
     }
+
 
     public int getUserEndorsements() {
         return UserEndorsements;
@@ -47,21 +84,19 @@ public class Account implements Serializable {
         return id;
     }
 
+    /** Method that changes the description
+     * @param description the new description for the account
+     */
     public void changeDescription(String description) {
          this.description = description ;
     }
 
+    /**Method to add to the user's posts
+     * @param post the post to be added
+     */
     public void addUserPosts(Posts post) {
          userPosts.add(post) ;
     }
-
-    public Posts findUserPost(int ID) {
-         for(int i=0; i < userPosts.size(); i++){
-             if(userPosts.get(i).getPostID() == ID){
-                 return userPosts.get(i) ;
-             }
-         } return null ;
-     }
 
     public ArrayList<Posts> getUserPosts() {
         return userPosts;

@@ -3,6 +3,9 @@ package socialmedia;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ * Class to implement all post functionality to the social media
+ */
 public class Posts implements Serializable {
     private Account account ;
     private String postContent ;
