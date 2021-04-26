@@ -653,14 +653,10 @@ public class SocialMedia implements SocialMediaPlatform {
 
     public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException, NotActionablePostException, PostIDNotRecognisedException, IOException, ClassNotFoundException, AccountIDNotRecognisedException {
         SocialMedia socialMedia = new SocialMedia();
-        socialMedia.loadPlatform("try1.ser");
+        socialMedia.loadPlatform("C:\\Users\\teddy\\IdeaProjects\\ECM1410_CA3\\TestSave");
         System.out.println(socialMedia.showPostChildrenDetails(0));
         socialMedia.removeAccount(2);
         socialMedia.createAccount("Teddy");
         socialMedia.createAccount("Santiago","yo");
-        for(Account user: socialMedia.usersList){
-            System.out.println(user.getHandle() + " " + user.getId());
-        }
-
     }
 }

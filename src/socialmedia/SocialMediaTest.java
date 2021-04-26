@@ -33,8 +33,6 @@ public class SocialMediaTest {
         try {
             for (int i = 1; i < 10; i++) {
                 platform.createPost("User" + i, "I feel great!");
-                // System.out.println(platform.showAccount("User" + i));
-                //System.out.println("-----------------------------------");
             }
             assert (platform.getUserPosts().size() == 9) : "More posts than required";
             for (int i = 1; i < 10; i++) {
