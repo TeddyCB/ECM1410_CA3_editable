@@ -245,6 +245,18 @@ public class SocialMediaTest {
                     System.out.println();
                 }
                 printTerminalMenu();
+            }else if(p==9){
+                System.out.println("The accounts currently in the system are: ");
+                for(Account account: platform.getUsersList()){
+                    System.out.println(account.getHandle());
+                    System.out.println("------------------");
+                }
+                Scanner handle = new Scanner(System.in);
+                try {
+                    System.out.println(platform.showAccount(handle.nextLine()));
+                } catch (HandleNotRecognisedException e) {
+                    e.printStackTrace();
+                }
             }
         } while (true);
     }

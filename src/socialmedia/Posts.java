@@ -158,10 +158,9 @@ public class Posts implements Serializable {
      * method clears post
      */
     public void clearAll(){
-        account = null; // unlinks account from post
         postContent = "<The original content was removed from the system and is no longer available.>";
-        commentCount = -1;
-        endorsementCount = -1;
+        commentCount = 0;
+        endorsementCount = 0;
     }
 
     /**

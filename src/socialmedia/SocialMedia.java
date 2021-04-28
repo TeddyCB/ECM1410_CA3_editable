@@ -48,6 +48,8 @@ public class SocialMedia implements SocialMediaPlatform {
             throw new IllegalHandleException("THIS USERNAME HAS BEEN TAKEN");
         } else if (handle.length() > 30 || handle.length() == 0) { //if handle exceeds max length or empty do
             throw new InvalidHandleException("HANDLE OF INVALID LENGTH DETECTED!");
+        }else if(handle.contains(" ")){
+            throw new InvalidHandleException("HANDLE CONTAINS WHITE SPACE!");
         }
         int id;
         if(usersList == null){ //if no users are in the system do
@@ -325,6 +327,9 @@ public class SocialMedia implements SocialMediaPlatform {
         }
         targetPost.setPostContent("<The original content was removed from the system and is no longer available.>");
         targetPost.setDeleted(true);
+        int endorsement_count= targetPost.getAccount().getUserEndorsements() - targetPost.getEndorsementCount();
+        targetPost.getAccount().setUserEndorsements(endorsement_count);
+        targetPost.getAccount().removePost(targetPost);
         for (Posts Endorsement : targetPost.getEndorsements()) {
             for (Posts post : userPosts) {
                 if (post.getPostID() == Endorsement.getPostID()) {
@@ -334,6 +339,7 @@ public class SocialMedia implements SocialMediaPlatform {
             }
             Endorsement.clearAll(); // Clear all endorsements for that post
         }
+        targetPost.clearAll();
     }
 
     /** method that shows an individual post's content
@@ -523,6 +529,8 @@ public class SocialMedia implements SocialMediaPlatform {
             throw new IllegalHandleException("THIS USERNAME HAS BEEN TAKEN");
         } else if (handle.length() > 30 || handle.length() == 0) { //if the handle's length exceeds the maximum or is empty, do
             throw new InvalidHandleException("HANDLE OF INVALID LENGTH DETECTED!");
+        } else if(handle.contains(" ")){
+            throw new InvalidHandleException("HANDLE CONTAINS WHITE SPACE!");
         }
         int id;
         if(usersList == null){ //if there are no users in the system, do
@@ -649,14 +657,5 @@ public class SocialMedia implements SocialMediaPlatform {
             count++;
         }
         return count;
-    }
-
-    public static void main(String[] args) throws IllegalHandleException, InvalidHandleException, HandleNotRecognisedException, InvalidPostException, NotActionablePostException, PostIDNotRecognisedException, IOException, ClassNotFoundException, AccountIDNotRecognisedException {
-        SocialMedia socialMedia = new SocialMedia();
-        socialMedia.loadPlatform("C:\\Users\\teddy\\IdeaProjects\\ECM1410_CA3\\TestSave");
-        System.out.println(socialMedia.showPostChildrenDetails(0));
-        socialMedia.removeAccount(2);
-        socialMedia.createAccount("Teddy");
-        socialMedia.createAccount("Santiago","yo");
     }
 }

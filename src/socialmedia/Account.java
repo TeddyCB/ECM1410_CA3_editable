@@ -75,11 +75,15 @@ public class Account implements Serializable {
          UserEndorsements += 1;
     }
 
-
+    public void setUserEndorsements(int userEndorsements) {
+        UserEndorsements = userEndorsements;
+    }
     public int getUserEndorsements() {
         return UserEndorsements;
     }
-
+    public void removePost(Posts post){
+        userPosts.remove(post);
+    }
     public int getId() {
         return id;
     }
