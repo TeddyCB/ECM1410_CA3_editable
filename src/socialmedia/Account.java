@@ -75,6 +75,9 @@ public class Account implements Serializable {
          UserEndorsements += 1;
     }
 
+    /**Method that sets the user endorsement count
+     * @param userEndorsements the desired number of endorsements
+     */
     public void setUserEndorsements(int userEndorsements) {
         UserEndorsements = userEndorsements;
     }

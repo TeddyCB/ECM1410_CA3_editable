@@ -3,7 +3,13 @@ package socialmedia;
 import java.io.IOException;
 import java.util.Scanner;
 
+/**
+ * Test application for running the SocialMedia
+ */
 public class SocialMediaTest {
+    /**
+     * Method that prebuilds an instance of the socialmedia platform
+     */
     public void TestSave() {
         SocialMedia platform = new SocialMedia();
         assert (platform.getNumberOfAccounts() == 0) : "Initial SocialMediaPlatform not empty as required.";
@@ -70,6 +76,10 @@ public class SocialMediaTest {
                     - -1: Exit
                 """);
     }
+
+    /**
+     * Method that runs the socialmedia platform from the command line
+     */
     public void socialMediaTerminalProgram() {
         SocialMedia platform = new SocialMedia();
         printTerminalMenu();
